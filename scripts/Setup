@@ -1,0 +1,59 @@
+Flink 실습 환경 setup
+
+1. Java 11 설치
+
+download url
+https://jdk.java.net/archive/
+
+cd {/Library/Java/JavaVirtualMachines/}
+sudo mv {~/Downloads}/openjdk-11.0.2_osx-x64_bin.tar.gz .
+sudo tar -zxvf openjdk-11.0.2_osx-x64_bin.tar.gz
+export JAVA_HOME={/Library/Java/JavaVirtualMachines}/jdk-11.0.2.jdk/Contents/Home
+java -version
+
+2. Flink 설치
+
+download url
+https://flink.apache.org/downloads/
+
+cd {~/SW}
+cp {~/Downloads}/flink-1.16.3-bin-scala_2.12.tgz .
+tar -xzf flink-1.16.3-bin-scala_2.12.tgz
+
+3. Flink 클러스터 실행
+
+cd flink-1.16.3
+./bin/start-cluster.sh
+
+4. Flink Job 실행
+
+./bin/flink run examples/streaming/WordCount.jar
+tail log/flink-*-taskexecutor-*.out
+
+5. Flink GUI 확인
+
+http://localhost:8081
+
+6. Flink 클러스터 종료 (필요시)
+
+./bin/stop-cluster.sh
+
+7. Docker Desktop 설치
+
+download url
+https://www.docker.com/products/docker-desktop/
+
+8. 실습 repository clone
+
+Git repo url
+https://github.com/haemee/flink-training.git
+
+cd {~/Repos}
+git clone https://github.com/haemee/flink-training.git
+cd {~/Repos}/flink-training/operations-playground
+
+9. Docker 실행
+
+docker-compose build
+docker-compose up -d
+docker-compose ps

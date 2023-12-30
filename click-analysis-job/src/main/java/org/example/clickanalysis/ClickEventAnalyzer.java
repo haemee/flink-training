@@ -47,7 +47,7 @@ public class ClickEventAnalyzer {
 
     String inputTopic = params.get("input-topic", "input");
     String outputTopic = params.get("output-topic", "output");
-    String brokers = params.get("bootstrap.servers", "localhost:9092");
+    String brokers = params.get("bootstrap.servers", "localhost:9094");
     Properties kafkaProps = new Properties();
     kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "click-event-count");
