@@ -14,9 +14,10 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-CREATE TABLE spend_report (
-	account_id BIGINT NOT NULL,
-	log_ts     TIMESTAMP(3) NOT NULL,
-	amount	   BIGINT NOT NULL,
-	PRIMARY KEY (account_id, log_ts)
+CREATE TABLE click_event_report (
+    window_start TIMESTAMP(3) NOT NULL,
+    window_end TIMESTAMP(3) NOT NULL,
+    page VARCHAR(30) NOT NULL,
+    count BIGINT NOT NULL,
+    PRIMARY KEY (window_start, window_end, page)
 );

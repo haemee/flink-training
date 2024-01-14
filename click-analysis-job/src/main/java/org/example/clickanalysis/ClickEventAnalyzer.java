@@ -3,9 +3,13 @@ package org.example.clickanalysis;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.connector.jdbc.JdbcConnectionOptions;
+import org.apache.flink.connector.jdbc.JdbcExecutionOptions;
+import org.apache.flink.connector.jdbc.JdbcSink;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
 import org.example.clickanalysis.functions.BackpressureMap;
 import org.example.clickanalysis.functions.ClickEventStatisticsCollector;
 import org.example.clickanalysis.functions.CountingAggregator;
@@ -24,7 +28,9 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +41,8 @@ public class ClickEventAnalyzer {
   public static final String OPERATOR_CHAINING_OPTION = "chaining";
 
   public static final Time WINDOW_SIZE = Time.of(15, TimeUnit.SECONDS);
+
+  public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
   public static void main(String[] args) throws Exception {
     final ParameterTool params = ParameterTool.fromArgs(args);
@@ -53,9 +61,10 @@ public class ClickEventAnalyzer {
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "click-event-count");
 
     KafkaSource<ClickEvent> source = KafkaSource.<ClickEvent>builder()
+      .setProperties(kafkaProps)
       .setTopics(inputTopic)
       .setValueOnlyDeserializer(new ClickEventDeserializationSchema())
-      .setProperties(kafkaProps)
+      .setStartingOffsets(OffsetsInitializer.earliest())
       .build();
 
     WatermarkStrategy<ClickEvent> watermarkStrategy = WatermarkStrategy
@@ -95,7 +104,30 @@ public class ClickEventAnalyzer {
               .build())
           .setDeliverGuarantee(DeliveryGuarantee.AT_LEAST_ONCE)
           .build())
-      .name("ClickEventStatistics Sink");
+      .name("ClickEventStatistics Kafka Sink");
+
+    statistics.addSink(
+      JdbcSink.sink(
+        "INSERT INTO click_event_report (window_start, window_end, page, count) VALUES (?, ?, ?, ?)",
+        (statement, stat) -> {
+          statement.setString(1, sdf.format(stat.getWindowStart()));
+          statement.setString(2, sdf.format(stat.getWindowStart()));
+          statement.setString(3, stat.getPage());
+          statement.setLong(4, stat.getCount());
+        },
+        JdbcExecutionOptions.builder()
+          .withBatchSize(1000)
+          .withBatchIntervalMs(15000)
+          .withMaxRetries(5)
+          .build(),
+        new JdbcConnectionOptions.JdbcConnectionOptionsBuilder()
+          .withUrl("jdbc:mysql://localhost:3306/sql-demo")
+          .withDriverName("com.mysql.jdbc.Driver")
+          .withUsername("sql-demo")
+          .withPassword("demo-sql")
+          .build()
+      ))
+      .name("ClickEventStatistics MySQL Sink");
 
     env.execute("Click Event Count");
   }

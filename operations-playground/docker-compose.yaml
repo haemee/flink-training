@@ -50,6 +50,19 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana:/var/lib/grafana
+  mysql:
+    image: mysql:8.0.31
+    command: --default-authentication-plugin=mysql_native_password --secure_file_priv=/data
+    environment:
+      MYSQL_USER: "sql-demo"
+      MYSQL_PASSWORD: "demo-sql"
+      MYSQL_DATABASE: "sql-demo"
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../docker/mysql-spend-report-init:/docker-entrypoint-initdb.d
+      - ./data:/data
 
 volumes:
   flink_data:

@@ -1,0 +1,10 @@
+Click Event Analyzer Job 실행
+
+1. 필요 connector 다운로드
+
+download url
+https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc/1.16.0/flink-connector-jdbc-1.16.3.jar
+https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
+
+cp {~/Downloads}/flink-connector-jdbc-1.16.3.jar {~/fastcampus/flink-1.16.3}/lib
+cp {~/Downloads}/mysql-connector-java-8.0.19.jar {~/fastcampus/flink-1.16.3}/lib
