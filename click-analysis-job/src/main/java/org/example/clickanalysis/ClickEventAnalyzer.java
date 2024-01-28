@@ -1,5 +1,6 @@
 package org.example.clickanalysis;
 
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.connector.base.DeliveryGuarantee;
@@ -10,7 +11,6 @@ import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
-import org.example.clickanalysis.functions.BackpressureMap;
 import org.example.clickanalysis.functions.ClickEventStatisticsCollector;
 import org.example.clickanalysis.functions.CountingAggregator;
 import org.example.clickanalysis.records.ClickEvent;
@@ -30,19 +30,15 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class ClickEventAnalyzer {
   public static final String CHECKPOINTING_OPTION = "checkpointing";
   public static final String EVENT_TIME_OPTION = "event-time";
-  public static final String BACKPRESSURE_OPTION = "backpressure";
   public static final String OPERATOR_CHAINING_OPTION = "chaining";
-
   public static final Time WINDOW_SIZE = Time.of(15, TimeUnit.SECONDS);
-
-  public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
   public static void main(String[] args) throws Exception {
     final ParameterTool params = ParameterTool.fromArgs(args);
@@ -51,14 +47,15 @@ public class ClickEventAnalyzer {
 
     configureEnvironment(params, env);
 
-    boolean inflictBackpressure = params.has(BACKPRESSURE_OPTION);
-
     String inputTopic = params.get("input-topic", "input");
     String outputTopic = params.get("output-topic", "output");
     String brokers = params.get("bootstrap.servers", "localhost:9094");
     Properties kafkaProps = new Properties();
     kafkaProps.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
     kafkaProps.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "click-event-count");
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     KafkaSource<ClickEvent> source = KafkaSource.<ClickEvent>builder()
       .setProperties(kafkaProps)
@@ -73,14 +70,6 @@ public class ClickEventAnalyzer {
       .withTimestampAssigner((clickEvent, l) -> clickEvent.getTimestamp().getTime());
 
     DataStream<ClickEvent> clicks = env.fromSource(source, watermarkStrategy, "ClickEvent Source");
-
-    if (inflictBackpressure) {
-      // Force a network shuffle so that the backpressure will affect the buffer pools
-      clicks = clicks
-        .keyBy(ClickEvent::getPage)
-        .map(new BackpressureMap())
-        .name("Backpressure");
-    }
 
     WindowAssigner<Object, TimeWindow> assigner = params.has(EVENT_TIME_OPTION) ?
       TumblingEventTimeWindows.of(WINDOW_SIZE) :
@@ -111,7 +100,7 @@ public class ClickEventAnalyzer {
         "INSERT INTO click_event_report (window_start, window_end, page, count) VALUES (?, ?, ?, ?)",
         (statement, stat) -> {
           statement.setString(1, sdf.format(stat.getWindowStart()));
-          statement.setString(2, sdf.format(stat.getWindowStart()));
+          statement.setString(2, sdf.format(stat.getWindowEnd()));
           statement.setString(3, stat.getPage());
           statement.setLong(4, stat.getCount());
         },

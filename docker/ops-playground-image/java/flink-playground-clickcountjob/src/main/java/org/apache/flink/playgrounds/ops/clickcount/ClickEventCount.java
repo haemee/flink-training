@@ -23,7 +23,6 @@ import org.apache.flink.connector.base.DeliveryGuarantee;
 import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.sink.KafkaSink;
 import org.apache.flink.connector.kafka.source.KafkaSource;
-import org.apache.flink.playgrounds.ops.clickcount.functions.BackpressureMap;
 import org.apache.flink.playgrounds.ops.clickcount.functions.ClickEventStatisticsCollector;
 import org.apache.flink.playgrounds.ops.clickcount.functions.CountingAggregator;
 import org.apache.flink.playgrounds.ops.clickcount.records.ClickEvent;
@@ -65,7 +64,6 @@ public class ClickEventCount {
 
 	public static final String CHECKPOINTING_OPTION = "checkpointing";
 	public static final String EVENT_TIME_OPTION = "event-time";
-	public static final String BACKPRESSURE_OPTION = "backpressure";
 	public static final String OPERATOR_CHAINING_OPTION = "chaining";
 
 	public static final Time WINDOW_SIZE = Time.of(15, TimeUnit.SECONDS);
@@ -77,7 +75,6 @@ public class ClickEventCount {
 
 		configureEnvironment(params, env);
 
-		boolean inflictBackpressure = params.has(BACKPRESSURE_OPTION);
 
 		String inputTopic = params.get("input-topic", "input");
 		String outputTopic = params.get("output-topic", "output");
@@ -98,14 +95,6 @@ public class ClickEventCount {
 				.withTimestampAssigner((clickEvent, l) -> clickEvent.getTimestamp().getTime());
 
 		DataStream<ClickEvent> clicks = env.fromSource(source, watermarkStrategy, "ClickEvent Source");
-
-		if (inflictBackpressure) {
-			// Force a network shuffle so that the backpressure will affect the buffer pools
-			clicks = clicks
-				.keyBy(ClickEvent::getPage)
-				.map(new BackpressureMap())
-				.name("Backpressure");
-		}
 
 		WindowAssigner<Object, TimeWindow> assigner = params.has(EVENT_TIME_OPTION) ?
 				TumblingEventTimeWindows.of(WINDOW_SIZE) :

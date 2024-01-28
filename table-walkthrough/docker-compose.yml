@@ -86,4 +86,5 @@ services:
     volumes:
       - ../docker/grafana-spend-report-init/provisioning/:/etc/grafana/provisioning/
       - ../docker/grafana-spend-report-init/dashboard.json:/etc/grafana/dashboard.json
+      - ../docker/grafana-spend-report-init/dashboard_click.json:/etc/grafana/dashboard_click.json
       - ../docker/grafana-spend-report-init/grafana.ini:/etc/grafana/grafana.ini

@@ -75,7 +75,9 @@ public class ClickEventGenerator {
 
 			producer.send(record);
 
-			Thread.sleep(DELAY);
+			//Thread.sleep(DELAY);
+
+			Thread.sleep((long) ((Math.random() * (10 - 1)) + 1));
 		}
 	}
 
@@ -100,7 +102,8 @@ public class ClickEventGenerator {
 
 		ClickEvent next() {
 			String page = nextPage();
-			return new ClickEvent(nextTimestamp(page), page);
+			//return new ClickEvent(nextTimestamp(page), page);
+			return new ClickEvent(new Date(), page);
 		}
 
 		private Date nextTimestamp(String page) {

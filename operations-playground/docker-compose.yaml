@@ -36,8 +36,8 @@ services:
       KAFKA_CREATE_TOPICS: "input:2:1, output:2:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     ports:
-      - 9092:9092
-      - 9094:9094
+      - "9092:9092"
+      - "9094:9094"
   prometheus:
     image: prom/prometheus
     ports:

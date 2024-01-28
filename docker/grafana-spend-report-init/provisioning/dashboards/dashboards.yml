@@ -27,4 +27,4 @@ providers:
       disableDeletion: true
       editable: true
       options:
-        path: /etc/grafana/dashboard.json 
+        path: /etc/grafana/dashboard_click.json

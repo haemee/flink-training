@@ -4,9 +4,9 @@ global:
 scrape_configs:
   - job_name: 'flink'
     static_configs:
-      - targets: ['docker.for.mac.localhost:9250', 'docker.for.mac.localhost:9251',
-                  'docker.for.mac.localhost:9252', 'docker.for.mac.localhost:9253',
-                  'docker.for.mac.localhost:9254', 'docker.for.mac.localhost:9255',
-                  'docker.for.mac.localhost:9256', 'docker.for.mac.localhost:9257',
-                  'docker.for.mac.localhost:9258', 'docker.for.mac.localhost:9259',
-                  'docker.for.mac.localhost:9260']
+      - targets: ['host.docker.internal:9250', 'host.docker.internal:9251',
+                  'host.docker.internal:9252', 'host.docker.internal:9253',
+                  'host.docker.internal:9254', 'host.docker.internal:9255',
+                  'host.docker.internal:9256', 'host.docker.internal:9257',
+                  'host.docker.internal:9258', 'host.docker.internal:9259',
+                  'host.docker.internal:9260']

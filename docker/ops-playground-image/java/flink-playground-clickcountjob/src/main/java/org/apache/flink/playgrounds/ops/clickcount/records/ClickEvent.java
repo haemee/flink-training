@@ -29,7 +29,7 @@ import java.util.Objects;
 public class ClickEvent {
 
 	//using java.util.Date for better readability
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss:SSS")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss:SSS")
 	private Date timestamp;
 	private String page;
 
