@@ -18,49 +18,24 @@
 
 version: '2.1'
 services:
-  jobmanager:
-    image: apache/flink-table-walkthrough:1-FLINK-1.16-scala_2.12
-    build: .
-    hostname: "jobmanager"
-    expose:
-      - "6123"
-    ports:
-      - "8082:8081"
-    command: standalone-job
-    environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
-    depends_on:
-      - kafka
-      - mysql
-  taskmanager:
-    image: apache/flink-table-walkthrough:1-FLINK-1.16-scala_2.12
-    build: .
-    expose:
-      - "6121"
-      - "6122"
-    depends_on:
-      - jobmanager
-    command: taskmanager
-    links:
-      - jobmanager:jobmanager
-    environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
     ports:
       - "2181:2181"
   kafka:
     image: wurstmeister/kafka:2.13-2.8.1
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_CREATE_TOPICS: "kafka:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     ports:
       - "9092:9092"
+      - "9094:9094"
     depends_on:
       - zookeeper
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: "kafka"
-      KAFKA_ADVERTISED_PORT: "9092"
-      HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "kafka:1:1"
   data-generator:
       image: apache/data-generator:1
       build: ../docker/data-generator
@@ -74,17 +49,8 @@ services:
       MYSQL_PASSWORD: "demo-sql"
       MYSQL_DATABASE: "sql-demo"
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-    volumes:
-      - ../docker/mysql-spend-report-init:/docker-entrypoint-initdb.d
-      - ./data:/data
-  grafana:
-    image: grafana/grafana:7.5.8
     ports:
-      - "3000:3000"
-    depends_on:
-      - mysql
+      - "3306:3306"
     volumes:
-      - ../docker/grafana-spend-report-init/provisioning/:/etc/grafana/provisioning/
-      - ../docker/grafana-spend-report-init/dashboard.json:/etc/grafana/dashboard.json
-      - ../docker/grafana-spend-report-init/dashboard_click.json:/etc/grafana/dashboard_click.json
-      - ../docker/grafana-spend-report-init/grafana.ini:/etc/grafana/grafana.ini
+      - ../docker/mysql-etl-init:/docker-entrypoint-initdb.d
+      - ./data:/data

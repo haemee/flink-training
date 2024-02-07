@@ -1,0 +1,42 @@
+Etl App Job 실행
+
+1. 필요 connector 다운로드
+
+download url
+https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/1.16.3/flink-sql-connector-kafka-1.16.3.jar
+https://repo.maven.apache.org/maven2/org/apache/flink/flink-csv/1.16.3/flink-csv-1.16.3.jar
+https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc/1.16.3/flink-connector-jdbc-1.16.3.jar
+https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
+
+cp {~/Downloads}/flink-sql-connector-kafka-1.16.3.jar {~/fastcampus/flink-1.16.3}/lib
+cp {~/Downloads}/flink-csv-1.16.3.jar {~/fastcampus/flink-1.16.3}/lib
+cp {~/Downloads}/flink-connector-jdbc-1.16.3.jar {~/fastcampus/flink-1.16.3}/lib
+cp {~/Downloads}/mysql-connector-java-8.0.19.jar {~/fastcampus/flink-1.16.3}/lib
+
+2. Docker 실행
+
+docker desktop 실행
+
+cd {~/fastcampus/flink-training/table-walkthrough/}
+docker-compose down
+docker-compose build
+docker-compose up -d
+
+3. Flink Job 실행
+
+{~/fastcampus/flink-1.16.3}/bin/flink run -d {~/fastcampus/flink-training}/table-walkthrough/target/etl-app-1.0.0.jar
+
+4. Flink GUI 확인
+
+http://localhost:8081
+
+5. Kafka Topic 확인
+
+docker-compose exec kafka kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic transactions
+
+6. MySQL Table 확인
+
+docker-compose exec mysql -u sql-demo -p
+password: demo-sql
+use demo-sql;
+select * from filtered_trx;

@@ -61,7 +61,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ../docker/mysql-spend-report-init:/docker-entrypoint-initdb.d
+      - ../docker/mysql-click-report-init:/docker-entrypoint-initdb.d
       - ./data:/data
 
 volumes:
