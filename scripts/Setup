@@ -40,8 +40,15 @@ http://localhost:8081
 
 7. Docker Desktop 설치
 
+중요: 4.20.1 버전 설치 필요하므로 아래 링크에서 다운로드
 download url
-https://www.docker.com/products/docker-desktop/
+    Windows : https://desktop.docker.com/win/main/amd64/110738/Docker%20Desktop%20Installer.exe (checksum : https://desktop.docker.com/win/main/amd64/110738/checksums.txt)
+    Mac with Intel chip : https://desktop.docker.com/mac/main/amd64/110738/Docker.dmg (checksum : https://desktop.docker.com/mac/main/amd64/110738/checksums.txt)
+    Mac with Apple chip : https://desktop.docker.com/mac/main/arm64/110738/Docker.dmg (checksum : https://desktop.docker.com/mac/main/arm64/110738/checksums.txt)
+    Debian : https://desktop.docker.com/linux/main/amd64/110738/docker-desktop-4.20.1-amd64.deb
+    RPM : https://desktop.docker.com/linux/main/amd64/110738/docker-desktop-4.20.1-x86_64.rpm
+    Arch : https://desktop.docker.com/linux/main/amd64/110738/docker-desktop-4.20.1-x86_64.pkg.tar.zst (checksum for all linux versions: https://desktop.docker.com/linux/main/amd64/110738/checksums.txt)
+
 
 8. 실습 repository clone
 
@@ -57,3 +64,7 @@ cd {~/Repos}/flink-training/operations-playground
 docker-compose build
 docker-compose up -d
 docker-compose ps
+
+10. Grafana admin 로그인 비밀번호
+
+admin/oracle2006
